@@ -57,7 +57,7 @@ public class ReciclajeController {
 	@GetMapping("/contenedores")
 	public ResponseEntity<List<ContenedorDTO>> getAllContendores() {
 		try {
-			List<Contenedor> contenedores = reciclajeService.getContenedor();
+			List<Contenedor> contenedores = reciclajeService.getContenedores();
 			
 			if (contenedores.isEmpty()) {
 				return new ResponseEntity<>(HttpStatus.NO_CONTENT);
@@ -84,7 +84,7 @@ public class ReciclajeController {
 			@ApiResponse(responseCode = "500", description = "Internal server error")
 		}
 	)
-	 
+/*	 
 	@GetMapping("/categories/{categoryName}/articles")
 	public ResponseEntity<List<ArticleDTO>> getArticlesByCategory(
 			@Parameter(name = "categoryName", description = "Name of the category", required = true, example = "Electronics")
@@ -226,5 +226,6 @@ public class ReciclajeController {
 				              article.getCategory().getName(), 
 				              article.getOwner().getNickname(),
 				              currency);
+*/
 	}
 }

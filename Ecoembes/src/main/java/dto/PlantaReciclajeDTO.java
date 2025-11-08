@@ -7,7 +7,7 @@ import entity.Contenedor;
 public class PlantaReciclajeDTO {
 	private long id;
 	private String nombre;
-	private int capacidad;
+	private int capacidad;//suma de contenedores
 	private int capacidadDisponible;
 	private ArrayList<Contenedor> listaContenedor;
 
@@ -18,7 +18,6 @@ public class PlantaReciclajeDTO {
 		super();
 		this.id = id;
 		this.nombre = nombre;
-		this.capacidad = capacidad;
 		this.capacidadDisponible = capacidadDisponible;
 		this.listaContenedor=new ArrayList<Contenedor>();
 	}
