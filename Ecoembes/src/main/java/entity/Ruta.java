@@ -20,6 +20,8 @@ public class Ruta {
 		this.duracionEstimada = duracionEstimada;
 		this.camionAsignado = camionAsignado;
 	}
+
+	
 	public long getId() {
 		return id;
 	}

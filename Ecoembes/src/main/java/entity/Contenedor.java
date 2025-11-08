@@ -17,10 +17,6 @@ public class Contenedor {
 	public Contenedor() {
 		super();
 	}
-	public Llenado getEstadoContenedor() {
-		return this.nivelDeLlenado;
-		
-	}
 
 	public long getId() {
 		return id;
