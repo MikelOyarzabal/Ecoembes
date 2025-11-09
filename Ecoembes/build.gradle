@@ -6,7 +6,7 @@ plugins {
 
 group = 'DS-06'
 version = '0.0.1-SNAPSHOT'
-description = 'Demo project for Spring Boot'
+description = 'Ecoembes project for software design'
 
 java {
 	toolchain {

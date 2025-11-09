@@ -2,6 +2,7 @@ package entity;
 
 import java.util.ArrayList;
 
+
 public class PlantaReciclaje {
 	private long id;
 	private String nombre;
@@ -11,13 +12,12 @@ public class PlantaReciclaje {
 	public PlantaReciclaje() {
 		super();
 	}
-	public PlantaReciclaje(long id, String nombre, int capacidadDisponible) {
+	public PlantaReciclaje(long id, String nombre, ArrayList<Contenedor>listaContenedors) {
 		super();
 		this.id = id;
 		this.nombre = nombre;
 		this.setCapacidad();
-		this.capacidadDisponible = capacidadDisponible;
-		this.listaContenedor=new ArrayList<Contenedor>();
+		this.listaContenedor=listaContenedor;
 	}
 	
 	public ArrayList<Contenedor> getListaContenedor() {
@@ -50,8 +50,8 @@ public class PlantaReciclaje {
 		return capacidadDisponible;
 	}
 	public void setCapacidadDisponible(int capacidadDisponible) {
-		this.capacidadDisponible = capacidadDisponible;
+		for(Contenedor c: listaContenedor) {
+			this.capacidadDisponible += c.getCapacidad()*(c.getNivelDeLlenado().getValor()/100);
 	}
-	
-
+}
 }

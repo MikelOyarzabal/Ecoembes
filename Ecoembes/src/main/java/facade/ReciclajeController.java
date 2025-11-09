@@ -148,8 +148,8 @@ public class ReciclajeController {
 		)		
 	@PostMapping("/contenedor")
 	public ResponseEntity<Void> makeContenedor(
-			@Parameter(name = "contenedirId", description = "ID of the contendor", required = true, example = "1")		
-			@PathVariable("contenedirId") long id,
+			@Parameter(name = "contenedorId", description = "ID of the contendor", required = true, example = "1")		
+			@PathVariable("contenedorId") long id,
 			@Parameter(name = "codigoPostal", description = "codigoPostal del contendor", required = true, example = "486236")
     		@RequestParam("codigoPostal") int codigoPostal,
     		@Parameter(name = "capacidad", description = "capacidad del contenedor", required = true, example = "10")
@@ -162,7 +162,7 @@ public class ReciclajeController {
 	    	if (user == null) {
 	    		return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
 	    	}
-	        ReciclajeService.makeContenedor(user, id, codigoPostal, capacidad);
+	        reciclajeService.makeContenedor(user, id, codigoPostal, capacidad);
 	        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
 
 	    } catch (Exception e) {
