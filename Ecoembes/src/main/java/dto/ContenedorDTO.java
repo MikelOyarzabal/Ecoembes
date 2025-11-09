@@ -9,11 +9,11 @@ public class ContenedorDTO {
 	private int codigoPostal;
 	private float capacidad;
 	private Llenado nivelDeLlenado;
-	private Date fechaVaciado;
+	private long fechaVaciado;
 	public ContenedorDTO() {
 		super();
 	}
-	public ContenedorDTO(long id, int codigoPostal, float capacidad, Llenado nivelDeLlenado, Date fechaVaciado) {
+	public ContenedorDTO(long id, int codigoPostal, float capacidad, Llenado nivelDeLlenado, long fechaVaciado) {
 		super();
 		this.id = id;
 		this.codigoPostal = codigoPostal;
@@ -45,10 +45,10 @@ public class ContenedorDTO {
 	public void setNivelDeLlenado(Llenado nivelDeLlenado) {
 		this.nivelDeLlenado = nivelDeLlenado;
 	}
-	public Date getFechaVaciado() {
+	public long getFechaVaciado() {
 		return fechaVaciado;
 	}
-	public void setFechaVaciado(Date fechaVaciado) {
+	public void setFechaVaciado(long fechaVaciado) {
 		this.fechaVaciado = fechaVaciado;
 	}
 }

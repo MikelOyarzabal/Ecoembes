@@ -1,8 +1,4 @@
-/**
- * This code is based on solutions provided by ChatGPT 4o and 
- * adapted using GitHub Copilot. It has been thoroughly reviewed 
- * and validated to ensure correctness and that it is free of errors.
- */
+
 package facade;
 
 import java.util.ArrayList;
@@ -18,6 +14,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+
 
 import dto.ContenedorDTO;
 import dto.PlantaReciclajeDTO;
@@ -139,8 +136,46 @@ public class ReciclajeController {
 	// GET llenado of a contenedor by date
 	
 	
-	// POST to add a Contenedor
-	
+	// POST to make a Contenedor
+	@Operation(
+			summary = "Make a contendor",
+		    description = "Allows a user to make a contendor",
+		    responses = {
+		        @ApiResponse(responseCode = "204", description = "No Content: Contendor placed successfully"),
+		        @ApiResponse(responseCode = "401", description = "Unauthorized: User not authenticated"),
+		        @ApiResponse(responseCode = "500", description = "Internal server error")
+		    }
+		)		
+	@PostMapping("/contenedor")
+	public ResponseEntity<Void> makeContenedor(
+			@Parameter(name = "contenedirId", description = "ID of the contendor", required = true, example = "1")		
+			@PathVariable("contenedirId") long id,
+			@Parameter(name = "codigoPostal", description = "codigoPostal del contendor", required = true, example = "486236")
+    		@RequestParam("codigoPostal") int codigoPostal,
+    		@Parameter(name = "capacidad", description = "capacidad del contenedor", required = true, example = "10")
+			@RequestParam("capacidad") float capacidad,
+			@io.swagger.v3.oas.annotations.parameters.RequestBody(description = "Authorization token in plain text", required = true)
+    		@RequestBody String token) { 
+	    try {	
+	    	User user = authService.getUserByToken(token);
+	    	
+	    	if (user == null) {
+	    		return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+	    	}
+	        ReciclajeService.makeContenedor(user, id, codigoPostal, capacidad);
+	        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+
+	    } catch (Exception e) {
+	        switch (e.getMessage()) {
+            case "Article not found":
+                return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+            case "Bid amount must be greater than the current price":
+                return new ResponseEntity<>(HttpStatus.CONFLICT);
+            default:
+                return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+	    }
 	
 	
 	

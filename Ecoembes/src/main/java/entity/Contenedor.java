@@ -7,11 +7,11 @@ public class Contenedor {
 	private int codigoPostal;
 	private float capacidad;
 	private Llenado nivelDeLlenado;
-	private Date fechaVaciado;
+	private long fechaVaciado;
 	public Contenedor() {
 		super();
 	}
-	public Contenedor(long id, int codigoPostal, float capacidad, Llenado nivelDeLlenado, Date fechaVaciado) {
+	public Contenedor(long id, int codigoPostal, float capacidad, Llenado nivelDeLlenado, long fechaVaciado) {
 		super();
 		this.id = id;
 		this.codigoPostal = codigoPostal;
@@ -43,10 +43,10 @@ public class Contenedor {
 	public void setNivelDeLlenado(Llenado nivelDeLlenado) {
 		this.nivelDeLlenado = nivelDeLlenado;
 	}
-	public Date getFechaVaciado() {
+	public long getFechaVaciado() {
 		return fechaVaciado;
 	}
-	public void setFechaVaciado(Date fechaVaciado) {
+	public void setFechaVaciado(long fechaVaciado) {
 		this.fechaVaciado = fechaVaciado;
 	}
 	
