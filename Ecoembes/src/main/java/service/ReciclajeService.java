@@ -1,4 +1,4 @@
-/**
+	/**
  * This code is based on solutions provided by ChatGPT 4o and 
  * adapted using GitHub Copilot. It has been thoroughly reviewed 
  * and validated to ensure correctness and that it is free of errors.
@@ -29,7 +29,7 @@ public class ReciclajeService {
 		return contenedorRepository.values().stream().toList();
 	}
 
-	// Get all contenedores
+	// Get all plantasReciclaje
 	public List<PlantaReciclaje> getPlantasReciclaje() {
 		return plantaReciclajeRepository.values().stream().toList();
 	}
@@ -54,12 +54,15 @@ public class ReciclajeService {
 		}
 	}
 
-	//Consulta del estado de los contenedores de una zona
-	public List<Contenedor> getContenedoresByPostalCode(int postalCode) {
+	//Consulta del estado de los contenedores de una zona en una determinada fecha
+	public List<Contenedor> getContenedoresByDateAndPostalCode(Date date, int postalCode) {
 		return contenedorRepository.values().stream()
-				.filter(contenedor -> contenedor.getCodigoPostal() == postalCode)
+				.filter(contenedor -> contenedor.getCodigoPostal() == postalCode && contenedor.getFechaVaciado().equals(date))
 				.toList();
 	}
+	
+	
+	
 	
 
 	//	public List<Contenedor> getContenedoresByCapacity(int capacity) {
@@ -107,7 +110,7 @@ public class ReciclajeService {
 	// Method to add a new Contenedor
 	public void addContenedor(Contenedor contenedor) {
 		if (contenedor != null) {
-			contenedorRepository.putIfAbsent(contenedor.getId(), contenedor);
+			contenedorRepository.put(contenedor.getId(), contenedor);
 		}
 	}
 

@@ -20,7 +20,9 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import dto.ContenedorDTO;
+import dto.PlantaReciclajeDTO;
 import entity.Contenedor;
+import entity.PlantaReciclaje;
 import entity.User;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -71,19 +73,89 @@ public class ReciclajeController {
 			return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 	}
-
-	// GET articles by category name
+	
+	
+	
+	// GET all PlantaReciclaje
 	@Operation(
-		summary = "Get Planta Reciclaje by category capacidad",
-		description = "Returns a list of all articles for a given category",
+		summary = "Get all Planta Reciclaje",
+		description = "Returns a list of all available Planta Reciclaje",
 		responses = {
-			@ApiResponse(responseCode = "200", description = "OK: List of articles retrieved successfully"),
-			@ApiResponse(responseCode = "204", description = "No Content: Category has no articles"),
-			@ApiResponse(responseCode = "400", description = "Bad Request: Currency not supported"),
-			@ApiResponse(responseCode = "404", description = "Not Found: Category not found"),
+			@ApiResponse(responseCode = "200", description = "OK: List of Planta Reciclaje retrieved successfully"),
+			@ApiResponse(responseCode = "204", description = "No Content: No Planta Reciclaje found"),
 			@ApiResponse(responseCode = "500", description = "Internal server error")
 		}
 	)
+	
+	@GetMapping("/plantasreciclaje")
+	public ResponseEntity<List<PlantaReciclajeDTO>> getAllPlantasReciclaje() {
+		try {
+			List<PlantaReciclaje> plantas = reciclajeService.getPlantasReciclaje();
+			
+			if (plantas.isEmpty()) {
+				return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+			}
+
+			List<PlantaReciclajeDTO> dtos = new ArrayList<>();
+			plantas.forEach(planta -> dtos.add(plantaReciclajeToDTO(planta)));
+			
+			return new ResponseEntity<>(dtos, HttpStatus.OK);
+		} catch (Exception e) {
+			return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+		}
+	}
+	
+	// GET PlantaReciclaje by capacity
+	@Operation(
+		summary = "Get Planta Reciclaje by capacity",
+		description = "Returns a Planta Reciclaje for a given capacity",
+		responses = {
+			@ApiResponse(responseCode = "200", description = "OK: Planta Reciclaje retrieved successfully"),
+			@ApiResponse(responseCode = "404", description = "Not Found: Planta Reciclaje not found"),
+			@ApiResponse(responseCode = "500", description = "Internal server error")
+		}
+	)
+	
+	@GetMapping("/plantasreciclaje/capacity/{capacity}")
+	public ResponseEntity<PlantaReciclajeDTO> getPlantaReciclajeByCapacity(
+			@Parameter(name = "capacity", description = "Capacity of the Planta Reciclaje", required = true, example = "5000")
+			@PathVariable("capacity") int capacity) {
+		try {
+			PlantaReciclaje planta = reciclajeService.getPlantasReciclajeByCapacity(capacity);
+						
+			if (planta != null) {
+				PlantaReciclajeDTO dto = plantaReciclajeToDTO(planta);
+				return new ResponseEntity<>(dto, HttpStatus.OK);
+			} else {
+				return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+			}
+		} catch (RuntimeException e) {
+			return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+		} catch (Exception e) {
+			return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+		}
+	}
+	
+	// GET llenado of a contenedor by date
+	
+	
+	// POST to add a Contenedor
+	
+	
+	
+	
+	// GET articles by category name
+//	@Operation(
+//		summary = "Get Planta Reciclaje by category capacidad",
+//		description = "Returns a list of all articles for a given category",
+//		responses = {
+//			@ApiResponse(responseCode = "200", description = "OK: List of articles retrieved successfully"),
+//			@ApiResponse(responseCode = "204", description = "No Content: Category has no articles"),
+//			@ApiResponse(responseCode = "400", description = "Bad Request: Currency not supported"),
+//			@ApiResponse(responseCode = "404", description = "Not Found: Category not found"),
+//			@ApiResponse(responseCode = "500", description = "Internal server error")
+//		}
+//	)
 /*	 
 	@GetMapping("/categories/{categoryName}/articles")
 	public ResponseEntity<List<ArticleDTO>> getArticlesByCategory(
@@ -209,23 +281,24 @@ public class ReciclajeController {
 	        }
 	    }
 	}
-
-	// Converts a Category to a CategoryDTO
+*/
+	// Converts a Contenedor to a Contenedor
 	private ContenedorDTO contenedorToDTO(Contenedor contenedor) {
-		return new ContenedorDTO(contenedor.getId());
+		return new ContenedorDTO(contenedor.getId(), 
+				                 contenedor.getCodigoPostal(), 
+				                 contenedor.getCapacidad(),
+				                 contenedor.getNivelDeLlenado(),
+				                 contenedor.getFechaVaciado());
 	}
 	
 	// Converts an Article to an ArticleDTO
-	private ArticleDTO articleToDTO(Article article, float exchangeRate, String currency) {
-		return new ArticleDTO(article.getId(), 
-				              article.getTitle(), 
-				              article.getInitialPrice() * exchangeRate,
-				              article.getCurrentPrice() * exchangeRate,
-				              article.getBids().size(),
-				              article.getAuctionEnd(),
-				              article.getCategory().getName(), 
-				              article.getOwner().getNickname(),
-				              currency);
-*/
+	private PlantaReciclajeDTO plantaReciclajeToDTO(PlantaReciclaje planta) {
+		return new PlantaReciclajeDTO(planta.getId(), 
+				                 planta.getNombre(), 
+				                 planta.getCapacidad(),
+				                 planta.getCapacidadDisponible(),
+				                 planta.getListaContenedor()
+				                 );
+		
 	}
 }

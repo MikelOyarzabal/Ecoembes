@@ -22,6 +22,14 @@ public class PlantaReciclajeDTO {
 		this.listaContenedor=new ArrayList<Contenedor>();
 	}
 	
+	public PlantaReciclajeDTO(long id, String nombre, int capacidad, int capacidadDisponible, ArrayList<Contenedor> listaContenedor) {
+		super();
+		this.id = id;
+		this.nombre = nombre;
+		this.capacidadDisponible = capacidadDisponible;
+		this.listaContenedor = listaContenedor;
+	}
+	
 	public ArrayList<Contenedor> getListaContenedor() {
 		return listaContenedor;
 	}
