@@ -1,7 +1,5 @@
 package entity;
 
-import java.util.Date;
-
 public class Contenedor {
 	private long id;
 	private int codigoPostal;

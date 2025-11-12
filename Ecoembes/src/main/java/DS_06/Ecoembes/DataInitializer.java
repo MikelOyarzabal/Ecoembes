@@ -15,7 +15,6 @@ import entity.User;
 import service.AuthService;
 import service.ReciclajeService;
 
-
 @Configuration
 public class DataInitializer {
 

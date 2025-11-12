@@ -1,7 +1,5 @@
 package dto;
 
-import java.util.Date;
-
 import entity.Llenado;
 
 public class ContenedorDTO {

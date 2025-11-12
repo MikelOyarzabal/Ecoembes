@@ -12,7 +12,7 @@ public class PlantaReciclaje {
 	public PlantaReciclaje() {
 		super();
 	}
-	public PlantaReciclaje(long id, String nombre, ArrayList<Contenedor>listaContenedors) {
+	public PlantaReciclaje(long id, String nombre, ArrayList<Contenedor>listaContenedor) {
 		super();
 		this.id = id;
 		this.nombre = nombre;
