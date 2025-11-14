@@ -200,7 +200,7 @@ public class ReciclajeController {
 		        @ApiResponse(responseCode = "500", description = "Internal server error")
 		    }
 		)		
-	@PostMapping("/contenedor")
+	@PostMapping("/contenedor/{contendorId}")
 	public ResponseEntity<Void> makeContenedor(
 			@Parameter(name = "contenedorId", description = "ID of the contendor", required = true, example = "1")		
 			@PathVariable("contenedorId") long id,
@@ -384,7 +384,9 @@ public class ReciclajeController {
 	private PlantaReciclajeDTO plantaReciclajeToDTO(PlantaReciclaje planta) {
 		return new PlantaReciclajeDTO(planta.getId(), 
 				                 planta.getNombre(), 
+				                 planta.getCapacidad(),
 				                 planta.getListaContenedor()
+				                 
 				                 );
 		
 	}

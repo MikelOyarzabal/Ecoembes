@@ -15,13 +15,13 @@ public class PlantaReciclajeDTO {
 	public PlantaReciclajeDTO() {
 		super();
 		this.listaContenedor = new ArrayList<>();
-        this.capacidad = 0;
         this.capacidadDisponible = 0;
 	}
-	public PlantaReciclajeDTO(long id, String nombre, ArrayList<Contenedor>listaContenedor) {
+	public PlantaReciclajeDTO(long id, String nombre,int capacidad, ArrayList<Contenedor>listaContenedor) {
 		super();
 		this.id = id;
 		this.nombre = nombre;
+		this.capacidad=capacidad;
 		this.listaContenedor = listaContenedor != null ? listaContenedor : new ArrayList<>();
 		this.calcularCapacidades();
 	}
@@ -32,11 +32,11 @@ public class PlantaReciclajeDTO {
 	    if (this.listaContenedor != null && !this.listaContenedor.isEmpty()) {
 	        for (Contenedor contenedor : this.listaContenedor) {
 	            // Capacidad total: suma de todas las capacidades de contenedores
-	            this.capacidad += contenedor.getCapacidad();
+	            
 	            
 	            // Capacidad disponible: basada en el nivel de llenado
 	            float factorDisponibilidad = calcularFactorDisponibilidad(contenedor.getNivelDeLlenado());
-	            this.capacidadDisponible += contenedor.getCapacidad() * factorDisponibilidad;
+	            this.capacidadDisponible +=this.capacidad -( contenedor.getCapacidad() * factorDisponibilidad);
 	        }
 	    }
 	}

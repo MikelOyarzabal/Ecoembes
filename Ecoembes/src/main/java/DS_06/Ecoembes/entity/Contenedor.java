@@ -6,8 +6,11 @@ public class Contenedor {
 	private float capacidad;
 	private Llenado nivelDeLlenado;
 	private long fechaVaciado;
+	private User userAsignacion;
+	private long fechaAsignacion;
 	public Contenedor() {
 		super();
+		this.nivelDeLlenado=Llenado.VERDE;
 	}
 	public Contenedor(long id, int codigoPostal, float capacidad, Llenado nivelDeLlenado, long fechaVaciado) {
 		super();
@@ -19,6 +22,19 @@ public class Contenedor {
 	}
 	public long getId() {
 		return id;
+	}
+	
+	public User getUserAsignacion() {
+		return userAsignacion;
+	}
+	public void setUserAsignacion(User userAsignacion) {
+		this.userAsignacion = userAsignacion;
+	}
+	public long getFechaAsignacion() {
+		return fechaAsignacion;
+	}
+	public void setFechaAsignacion(long fechaAsignacion) {
+		this.fechaAsignacion = fechaAsignacion;
 	}
 	public void setId(long id) {
 		this.id = id;
@@ -46,6 +62,9 @@ public class Contenedor {
 	}
 	public void setFechaVaciado(long fechaVaciado) {
 		this.fechaVaciado = fechaVaciado;
+	}
+	public int getOcupado() {
+		return (int) (this.getCapacidad() * (100 - nivelDeLlenado.getValor()) / 100.0f);
 	}
 	
 	

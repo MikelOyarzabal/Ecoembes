@@ -19,6 +19,7 @@ public class ReciclajeService {
 	// Simulating category and article repositories
 	private static Map<Long, PlantaReciclaje> plantaReciclajeRepository = new HashMap<>();
 	private static Map<Long, Contenedor> contenedorRepository = new HashMap<>();
+	
 
 	// Get all contenedores
 	public List<Contenedor> getContenedores() {
@@ -28,6 +29,37 @@ public class ReciclajeService {
 	// Get all plantasReciclaje
 	public List<PlantaReciclaje> getPlantasReciclaje() {
 		return plantaReciclajeRepository.values().stream().toList();
+	}
+	public void asignarContenedorAPlanta(User usuario, long contenedorId, long plantaId) {
+	    Contenedor contenedor = contenedorRepository.get(contenedorId);
+	    if (contenedor == null) {
+	        throw new RuntimeException("Contenedor no encontrado");
+	    }
+
+	    PlantaReciclaje planta = plantaReciclajeRepository.get(plantaId);
+	    if (planta == null) {
+	        throw new RuntimeException("Planta de reciclaje no encontrada");
+	    }
+
+	    // Verificar capacidad disponible
+	    if (planta.getCapacidadDisponible() < contenedor.getOcupado()) {//si el espacio necesario para el contendor es mayor al disponible en la planta en la planta que entre
+	        throw new RuntimeException("Capacidad insuficiente en la planta. Disponible: " + planta.getCapacidadDisponible() );
+	    }
+
+	    // Actualizar los campos de auditoría en el contenedor
+	    contenedor.setUserAsignacion(usuario);
+	    contenedor.setFechaAsignacion(System.currentTimeMillis());
+
+
+	    // Asignar el contenedor a la planta (si no está ya asignado)
+	    if (!planta.getListaContenedor().contains(contenedor)) {
+	        planta.agregarContenedor(contenedor);
+	    }
+
+	    // Actualizar el contenedor en el repositorio
+	    contenedorRepository.put(contenedorId, contenedor);
+	    // Actualizar la planta en el repositorio
+	    plantaReciclajeRepository.put(plantaId, planta);
 	}
 
 	// Get plantasReciclaje based on capacity
