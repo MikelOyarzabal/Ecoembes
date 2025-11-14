@@ -77,8 +77,8 @@ public class DataInitializer {
 			listaContenedoresEste.add(contenedor12);
 			
 			
-			PlantaReciclaje plantaNorte = new PlantaReciclaje(1, "PlasSB Ltd.", listaContenedoresNorte);
-			PlantaReciclaje plantaSur = new PlantaReciclaje(2, "ContSocket Ltd.", listaContenedoresSur);
+			PlantaReciclaje plantaNorte = new PlantaReciclaje(1, "PlasSB Ltd.", 4000, listaContenedoresNorte);
+			PlantaReciclaje plantaSur = new PlantaReciclaje(2, "ContSocket Ltd.", 5000, listaContenedoresSur);
 			// Add containers to recycling service
 			reciclajeService.addContenedor(contenedor1);
 			reciclajeService.addContenedor(contenedor2);
