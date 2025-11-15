@@ -33,6 +33,7 @@ public class DataInitializer {
 			User reciclador4 = new User("EcoSofia", "sofia.eco@eco.com", "3coS0f1@!");
 			User reciclador5 = new User("RecicladorLuis", "luis.recicla@eco.com", "Lui5R3c1cl@!");
 			User reciclador6 = new User("AmbientalistaAna", "ana.ambiente@eco.com", "4n4Amb1ent3!");
+			User recicladorAdmin = new User("admin", "admin", "admin");
 
 			authService.addUser(reciclador1);
 			authService.addUser(reciclador2);
@@ -40,6 +41,7 @@ public class DataInitializer {
 			authService.addUser(reciclador4);
 			authService.addUser(reciclador5);
 			authService.addUser(reciclador6);
+			authService.addUser(recicladorAdmin);
 
 			logger.info("Users saved!");
 			long emptyingDate = System.currentTimeMillis();

@@ -200,12 +200,12 @@ public class ReciclajeController {
 					@ApiResponse(responseCode = "500", description = "Internal server error")
 			}
 			)
-	@PostMapping("/plantasreciclaje/{plantaId}/contenedor/{contenedorId}")
+	@PostMapping("/plantasreciclaje/{idPlanta}/contenedor/{idContenedor}")
 	public ResponseEntity<Void> asignarContenedorAPlanta(
-			@Parameter(name = "plantaId", description = "ID de la planta de reciclaje", required = true, example = "1")        
-			@PathVariable("plantaId") long plantaId,
-			@Parameter(name = "contenedorId", description = "ID del contenedor", required = true, example = "1")        
-			@PathVariable("contenedorId") long contenedorId,
+			@Parameter(name = "idPlanta", description = "ID de la planta de reciclaje", required = true, example = "1")        
+			@PathVariable("idPlanta") long plantaId,
+			@Parameter(name = "idContenedor", description = "ID del contenedor", required = true, example = "1")        
+			@PathVariable("idContenedor") long contenedorId,
 			@io.swagger.v3.oas.annotations.parameters.RequestBody(description = "Token de autorización en texto plano", required = true)
 			@RequestBody String token) { 
 		try {    	
