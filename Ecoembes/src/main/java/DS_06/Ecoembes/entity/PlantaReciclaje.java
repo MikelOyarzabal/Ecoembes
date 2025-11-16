@@ -67,7 +67,9 @@ public class PlantaReciclaje {
 		return capacidad;
 	}
 
-	
+	public void setCapacidad(int capacidad) {
+		this.capacidad = capacidad;
+	}
 	public int getCapacidadDisponible() {
 		return capacidadDisponible;
 	}

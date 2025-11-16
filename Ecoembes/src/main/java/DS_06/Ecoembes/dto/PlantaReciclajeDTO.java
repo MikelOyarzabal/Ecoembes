@@ -26,14 +26,11 @@ public class PlantaReciclajeDTO {
 		this.calcularCapacidades();
 	}
 	private void calcularCapacidades() {
-	    this.capacidad = 0;
+
 	    this.capacidadDisponible = 0;
 	    
 	    if (this.listaContenedor != null && !this.listaContenedor.isEmpty()) {
 	        for (Contenedor contenedor : this.listaContenedor) {
-	            // Capacidad total: suma de todas las capacidades de contenedores
-	            
-	            
 	            // Capacidad disponible: basada en el nivel de llenado
 	            float factorDisponibilidad = calcularFactorDisponibilidad(contenedor.getNivelDeLlenado());
 	            this.capacidadDisponible +=this.capacidad -( contenedor.getCapacidad() * factorDisponibilidad);
@@ -79,8 +76,6 @@ public class PlantaReciclajeDTO {
 	public int getCapacidadDisponible() {
 		return capacidadDisponible;
 	}
-	public void setCapacidadDisponible(int capacidadDisponible) {
-		this.capacidadDisponible = capacidadDisponible;
-	}
+	
 	
 }

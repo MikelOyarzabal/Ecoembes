@@ -90,51 +90,6 @@ public class ReciclajeService {
 	}
 	
 	
-	
-	
-
-	//	public List<Contenedor> getContenedoresByCapacity(int capacity) {
-	//		Contenedor contenedor = contenedorRepository.get(capacity);
-	//		if (contenedor == null) {
-	//			throw new RuntimeException("Contenedor not found");
-	//		}
-	//		
-	//		
-	//	}
-	//	public List<Cont> getArticlesByCategoryName(String categoryName) {
-	//		Category category = categoryRepository.get(categoryName);
-	//
-	//		if (category == null) {
-	//			throw new RuntimeException("Category not found");
-	//		}
-	//
-	//		return category.getArticles();
-	//	}
-	//	
-	//	// Get article by id
-	//	public Contenedor getArticleById(long id) {
-	//		return contenedorRepository.get(articleId);
-	//	}
-
-	//	// Make a bid on an article
-	//	public void makeBid(User user, long articleId, float amount) {
-	//		// Retrieve the article by ID
-	//		Article article = articleRepository.get(articleId);
-	//
-	//		if (article == null) {
-	//			throw new RuntimeException("Article not found");
-	//		}
-	//
-	//		if (amount <= article.getCurrentPrice()) {
-	//			throw new RuntimeException("Bid amount must be greater than the current price");
-	//		}
-	//		
-	//		// Create a new bid and associate it with the article
-	//		Bid bid = new Bid(System.currentTimeMillis(), amount, article, user);
-	//		article.getBids().add(bid);
-	//	}
-
-
 	// Method to add a new Contenedor
 	public void addContenedor(Contenedor contenedor) {
 		if (contenedor != null) {
