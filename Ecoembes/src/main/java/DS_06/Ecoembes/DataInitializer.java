@@ -24,7 +24,6 @@ import DS_06.Ecoembes.entity.Llenado;
 import DS_06.Ecoembes.entity.PlantaReciclaje;
 import DS_06.Ecoembes.entity.User;
 import DS_06.Ecoembes.service.AuthService;
-import DS_06.Ecoembes.service.ReciclajeService;
 
 @Configuration
 public class DataInitializer {
@@ -36,8 +35,7 @@ public class DataInitializer {
     CommandLineRunner initData(UserRepository userRepository, 
                                ContenedorRepository contenedorRepository, 
                                PlantaReciclajeRepository plantaReciclajeRepository,
-                               AuthService authService,
-                               ReciclajeService reciclajeService) {
+                               AuthService authService) {
         return args -> {
             // Database is already initialized
             if (userRepository.count() > 0) {                
@@ -56,7 +54,7 @@ public class DataInitializer {
             User reciclador6 = new User("AmbientalistaAna", "ana.ambiente@eco.com", "4n4Amb1ent3!");
             User recicladorAdmin = new User("admin", "admin@ecoembes.com", "admin");
 
-            // Save users using authService (which handles business logic)
+            // Save users using authService
             authService.addUser(reciclador1);
             authService.addUser(reciclador2);
             authService.addUser(reciclador3);
@@ -91,10 +89,22 @@ public class DataInitializer {
             Contenedor contenedor11 = new Contenedor(28011, 1300.0f, Llenado.ROJO, emptyingDate);
             Contenedor contenedor12 = new Contenedor(28012, 600.0f, Llenado.AMARILLO, emptyingDate);
             
-            // Create recycling plants
+            // Save containers first
+            contenedorRepository.saveAll(List.of(
+                contenedor1, contenedor2, contenedor3, contenedor4,
+                contenedor5, contenedor6, contenedor7, contenedor8,
+                contenedor9, contenedor10, contenedor11, contenedor12
+            ));
+            
+            // Create recycling plants with specific types
             PlantaReciclaje plantaNorte = new PlantaReciclaje("PlasSB Ltd.", 40000, null);
+            plantaNorte.setTipoPlanta("PLASSB");
+            
             PlantaReciclaje plantaSur = new PlantaReciclaje("ContSocket Ltd.", 50000, null);
+            plantaSur.setTipoPlanta("CONTSOCKET");
+            
             PlantaReciclaje plantaEste = new PlantaReciclaje("EcoRecicla S.A.", 45000, null);
+            plantaEste.setTipoPlanta("DESCONOCIDO");
             
             // Add containers to recycling plants
             plantaNorte.agregarContenedor(contenedor1);
@@ -138,6 +148,8 @@ public class DataInitializer {
             logger.info("Database initialization completed!");
             logger.info("Created {} recycling plants", plantaReciclajeRepository.count());
             logger.info("Created {} containers", contenedorRepository.count());
+            logger.info("Plant types: PlasSB={}, ContSocket={}, Desconocido={}", 
+                plantaNorte.getTipoPlanta(), plantaSur.getTipoPlanta(), plantaEste.getTipoPlanta());
         };
     }
 }

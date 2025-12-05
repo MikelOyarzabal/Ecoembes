@@ -12,6 +12,9 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.OneToMany;
+import jakarta.persistence.PostLoad;
+import jakarta.persistence.PostPersist;
+import jakarta.persistence.PostUpdate;
 import jakarta.persistence.Transient;
 
 @Entity
@@ -27,6 +30,9 @@ public class PlantaReciclaje {
     @Column(nullable = false)
     private int capacidad;
 
+    @Column(name = "tipo_planta")
+    private String tipoPlanta; // "PLASSB" o "CONTSOCKET"
+
     @OneToMany(mappedBy = "plantaReciclaje", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     private List<Contenedor> listaContenedor = new ArrayList<>();
 
@@ -36,13 +42,13 @@ public class PlantaReciclaje {
         this.listaContenedor = new ArrayList<>();
     }
 
-    // Constructor with parameters
-    // Note: id is auto-generated, so it should not be included in the constructor
+    // Constructor with parameters (without id)
     public PlantaReciclaje(String nombre, int capacidad, List<Contenedor> listaContenedor) {
         super();
         this.nombre = nombre;
         this.capacidad = capacidad;
         this.listaContenedor = listaContenedor != null ? listaContenedor : new ArrayList<>();
+        determinarTipoPorNombre();
         this.calcularCapacidades();
     }
 
@@ -52,7 +58,6 @@ public class PlantaReciclaje {
         
         if (this.listaContenedor != null && !this.listaContenedor.isEmpty()) {
             for (Contenedor contenedor : this.listaContenedor) {
-                // Occupied capacity: based on fill level
                 float factorOcupacion = calcularFactorOcupacion(contenedor.getNivelDeLlenado());
                 capacidadOcupada += contenedor.getCapacidad() * factorOcupacion;
             }
@@ -64,10 +69,27 @@ public class PlantaReciclaje {
     // Helper method to calculate occupancy factor based on fill level
     private float calcularFactorOcupacion(Llenado nivelLlenado) {
         if (nivelLlenado == null) return 0.0f;
-        
-        // Use enum values: VERDE=25, AMARILLO=50, ROJO=75, LLENO=100
-        // Occupancy factor is: valor_llenado / 100
         return nivelLlenado.getValor() / 100.0f;
+    }
+    
+    // Determine plant type by name
+    @PostLoad
+    @PostPersist
+    @PostUpdate
+    public void determinarTipoPorNombre() {
+        if (this.nombre == null) {
+            this.tipoPlanta = "DESCONOCIDO";
+            return;
+        }
+        
+        String nombreUpper = this.nombre.toUpperCase();
+        if (nombreUpper.contains("PLASSB")) {
+            this.tipoPlanta = "PLASSB";
+        } else if (nombreUpper.contains("CONTSOCKET")) {
+            this.tipoPlanta = "CONTSOCKET";
+        } else {
+            this.tipoPlanta = "DESCONOCIDO";
+        }
     }
     
     // Get the available capacity (calculated, not persisted)
@@ -82,7 +104,7 @@ public class PlantaReciclaje {
             if (this.listaContenedor == null) {
                 this.listaContenedor = new ArrayList<>();
             }
-            contenedor.setPlantaReciclaje(this); // Set the bidirectional relationship
+            contenedor.setPlantaReciclaje(this);
             this.listaContenedor.add(contenedor);
             this.calcularCapacidades();
         }
@@ -92,7 +114,7 @@ public class PlantaReciclaje {
     public void eliminarContenedor(Contenedor contenedor) {
         if (contenedor != null && this.listaContenedor != null) {
             this.listaContenedor.remove(contenedor);
-            contenedor.setPlantaReciclaje(null); // Clear the bidirectional relationship
+            contenedor.setPlantaReciclaje(null);
             this.calcularCapacidades();
         }
     }
@@ -112,6 +134,7 @@ public class PlantaReciclaje {
 
     public void setNombre(String nombre) {
         this.nombre = nombre;
+        determinarTipoPorNombre();
     }
 
     public int getCapacidad() {
@@ -121,6 +144,14 @@ public class PlantaReciclaje {
     public void setCapacidad(int capacidad) {
         this.capacidad = capacidad;
         this.calcularCapacidades();
+    }
+
+    public String getTipoPlanta() {
+        return tipoPlanta;
+    }
+
+    public void setTipoPlanta(String tipoPlanta) {
+        this.tipoPlanta = tipoPlanta;
     }
 
     public List<Contenedor> getListaContenedor() {
@@ -168,9 +199,12 @@ public class PlantaReciclaje {
     // toString method for debugging
     @Override
     public String toString() {
-        return "PlantaReciclaje [id=" + id + ", nombre=" + nombre + ", capacidad=" + capacidad + 
-               ", capacidadDisponible=" + getCapacidadDisponible() + ", contenedores=" + 
-               (listaContenedor != null ? listaContenedor.size() : 0) + "]";
+        return "PlantaReciclaje [id=" + id + 
+               ", nombre=" + nombre + 
+               ", tipoPlanta=" + tipoPlanta +
+               ", capacidad=" + capacidad + 
+               ", capacidadDisponible=" + getCapacidadDisponible() + 
+               ", contenedores=" + (listaContenedor != null ? listaContenedor.size() : 0) + "]";
     }
     
     // Transient field for calculated capacity
