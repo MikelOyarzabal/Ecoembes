@@ -15,12 +15,16 @@ import DS_06.Ecoembes.entity.User;
 public class AuthService {
 
     private final UserRepository userRepository;
+    private final TokenStateManager tokenStateManager;
     
     // Storage to keep the session of the users that are logged in
-    private static Map<String, User> tokenStore = new HashMap<>();
+    
+    //private static Map<String, User> tokenStore = new HashMap<>();
 
-    public AuthService(UserRepository userRepository) {
+    public AuthService(UserRepository userRepository, TokenStateManager tokenStateManager) {
         this.userRepository = userRepository;
+        this.tokenStateManager = tokenStateManager;
+
     }
 
     // Login method that checks if the user exists in the database and validates the password
@@ -28,9 +32,7 @@ public class AuthService {
         Optional<User> userOpt = userRepository.findByEmail(email);
         
         if (userOpt.isPresent() && userOpt.get().checkPassword(password)) {
-            String token = generateToken();  // Generate a random token for the session
-            tokenStore.put(token, userOpt.get());     // Store the token and associate it with the user
-
+            String token =tokenStateManager.generateToken(userOpt.get());  // Generate a random token for the session
             return Optional.of(token);
         } else {
             return Optional.empty();
@@ -39,12 +41,8 @@ public class AuthService {
     
     // Logout method to remove the token from the session store
     public Optional<Boolean> logout(String token) {
-        if (tokenStore.containsKey(token)) {
-            tokenStore.remove(token);
-            return Optional.of(true);
-        } else {
-            return Optional.empty();
-        }
+    	boolean revoked = tokenStateManager.revokeToken(token);
+        return revoked ? Optional.of(true) : Optional.empty();
     }
     
     // Method to add a new user to the repository
@@ -66,9 +64,10 @@ public class AuthService {
         }
     }
     
-    // Method to get the user based on the token
+ // Method to get the user based on the token (ahora valida estado)
     public User getUserByToken(String token) {
-        return tokenStore.get(token); 
+        return tokenStateManager.validateToken(token)
+                .orElse(null); 
     }
     
     // Method to get the user based on the email
@@ -79,6 +78,14 @@ public class AuthService {
     // Method to get the user based on the nickname
     public User getUserByNickname(String nickname) {
         return userRepository.findByNickname(nickname).orElse(null);
+    }
+    // Nuevo método para validar token sin obtener usuario
+    public boolean isValidToken(String token) {
+        return tokenStateManager.validateToken(token).isPresent();
+    }
+    // Nuevo método para limpieza de tokens expirados
+    public void cleanupTokens() {
+        tokenStateManager.cleanupExpiredTokens();
     }
 
     // Synchronized method to guarantee unique token generation

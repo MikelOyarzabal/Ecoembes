@@ -69,4 +69,20 @@ public class AuthController {
         	return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
         }        
     }
+    @Operation(
+            summary = "Validate token",
+            description = "Validates if a token is still active and valid.",
+            responses = {
+                @ApiResponse(responseCode = "200", description = "Token is valid"),
+                @ApiResponse(responseCode = "401", description = "Token is invalid or expired"),
+            }
+        )
+        @PostMapping("/validate")
+        public ResponseEntity<Void> validateToken(@RequestBody String token) {
+            if (authService.isValidToken(token)) {
+                return new ResponseEntity<>(HttpStatus.OK);
+            } else {
+                return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+            }
+        }
 }
