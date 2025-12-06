@@ -61,9 +61,24 @@ public class ReciclajeService {
         Contenedor contenedor = contenedorRepository.findById(contenedorId)
             .orElseThrow(() -> new RuntimeException("Contenedor no encontrado"));
 
+<<<<<<< Updated upstream
         // Obtener planta
         PlantaReciclaje planta = plantaReciclajeRepository.findById(plantaId)
             .orElseThrow(() -> new RuntimeException("Planta de reciclaje no encontrada"));
+=======
+	//Get el llenado de un contenedor por fecha
+	public Llenado getLlenadoContenedorByDate(long contenedorId, long date) {
+		Contenedor contenedor = contenedorRepository.get(contenedorId);
+		if (contenedor == null) {
+	        throw new RuntimeException("Contenedor not found");
+	    }
+		if(contenedor.getFechaVaciado()==date) {
+			return contenedor.getNivelDeLlenado();
+		} else {
+			throw new RuntimeException("No data for the given date");
+		}
+	}
+>>>>>>> Stashed changes
 
         // Determinar tipo de planta si no está establecido
         if (planta.getTipoPlanta() == null || "DESCONOCIDO".equals(planta.getTipoPlanta())) {

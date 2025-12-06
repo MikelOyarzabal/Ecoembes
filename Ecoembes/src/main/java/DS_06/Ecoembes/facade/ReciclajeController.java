@@ -55,9 +55,96 @@ public class ReciclajeController {
         try {
             List<Contenedor> contenedores = reciclajeService.getContenedores();
 
+<<<<<<< Updated upstream
             if (contenedores == null || contenedores.isEmpty()) {
                 return new ResponseEntity<>(HttpStatus.NO_CONTENT);
             }
+=======
+			List<ContenedorDTO> dtos = new ArrayList<>();
+			contenedores.forEach(contenedor -> dtos.add(contenedorToDTO(contenedor)));
+			
+			return new ResponseEntity<>(dtos, HttpStatus.OK);
+		} catch (Exception e) {
+			return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+		}
+	}
+	@Operation(
+		    summary = "Get llenado de un contenedor por fecha",
+		    description = "Returns the fill level of a specific container for a given date",
+		    responses = {
+		        @ApiResponse(responseCode = "200", description = "OK: Llenado retrieved successfully"),
+		        @ApiResponse(responseCode = "404", description = "Not Found: No data for the given date"),
+		        @ApiResponse(responseCode = "500", description = "Internal server error")
+		    }
+		)
+	@GetMapping("/contenedores/{contenedorId}/fecha/{date}")
+	public ResponseEntity<Llenado> getLlenadoContenedorByDate(
+			@Parameter(name = "contenedorId", description = "ID del contenedor", required = true, example = "0")
+	        @PathVariable("contenedorId") long contenedorId,
+	        @Parameter(name = "date", description = "Fecha en formato timestamp", required = true, example = "0")
+	        @PathVariable("date") long date) {
+	    try {
+	        Llenado llenado = reciclajeService.getLlenadoContenedorByDate(contenedorId, date);
+	        return new ResponseEntity<>(llenado, HttpStatus.OK);
+	    } catch (RuntimeException e) {
+	        if (e.getMessage().equals("No data for the given date")) {
+	            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+	        }
+	        return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+	    }
+	}
+	@Operation(
+		    summary = "Get contenedores por código postal y fecha",
+		    description = "Permite visualizar el estado de los contenedores de una zona específica (identificada por código postal) en una fecha determinada",
+		    responses = {
+		        @ApiResponse(responseCode = "200", description = "OK: Lista de contenedores recuperada exitosamente"),
+		        @ApiResponse(responseCode = "204", description = "No Content: No se encontraron contenedores para los criterios especificados"),
+		        @ApiResponse(responseCode = "500", description = "Internal server error")
+		    }
+		)
+	@GetMapping("/contenedores/{codigoPostal}/fecha/{fecha}")
+		public ResponseEntity<List<ContenedorDTO>> getContenedoresByDateAndPostalCode(
+		        @Parameter(name = "fecha", description = "Fecha en formato timestamp", required = true, example = "0")
+		        @PathVariable("fecha") long fecha,
+		        @Parameter(name = "codigoPostal", description = "Código postal de la zona", required = true, example = "28001")
+		        @PathVariable("codigoPostal") int codigoPostal) {
+		    try {
+		        List<Contenedor> contenedores = reciclajeService.getContenedoresByDateAndPostalCode(fecha, codigoPostal);
+		        
+		        if (contenedores.isEmpty()) {
+		            return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+		        }
+
+		        List<ContenedorDTO> dtos = new ArrayList<>();
+		        contenedores.forEach(contenedor -> dtos.add(contenedorToDTO(contenedor)));
+		        
+		        return new ResponseEntity<>(dtos, HttpStatus.OK);
+		    } catch (Exception e) {
+		        return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+		    }
+		}
+	
+	
+	// GET all PlantaReciclaje
+	@Operation(
+		summary = "Get all Planta Reciclaje",
+		description = "Returns a list of all available Planta Reciclaje",
+		responses = {
+			@ApiResponse(responseCode = "200", description = "OK: List of Planta Reciclaje retrieved successfully"),
+			@ApiResponse(responseCode = "204", description = "No Content: No Planta Reciclaje found"),
+			@ApiResponse(responseCode = "500", description = "Internal server error")
+		}
+	)
+	
+	@GetMapping("/plantasreciclaje")
+	public ResponseEntity<List<PlantaReciclajeDTO>> getAllPlantasReciclaje() {
+		try {
+			List<PlantaReciclaje> plantas = reciclajeService.getPlantasReciclaje();
+			
+			if (plantas.isEmpty()) {
+				return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+			}
+>>>>>>> Stashed changes
 
             List<ContenedorDTO> dtos = new ArrayList<>();
             for (Contenedor contenedor : contenedores) {
