@@ -18,21 +18,20 @@ import DS_06.Ecoembes.external.IPlantaReciclajeGateway;
 @Service
 public class ContSocketGateway implements IPlantaReciclajeGateway {
     
-    @Value("${planta.external.contsocket.host:localhost}")
-    private String host;
     
-    @Value("${planta.external.contsocket.port:9090}")
+    private String host;
     private int port;
     
 	private static String DELIMITER = "#";
-
 	private static final int ERROR_CODE = -1;
-
     private static final int SOCKET_TIMEOUT_MS = 5000;
-    public ContSocketGateway(String host, int port) {
-    	this.host = host;
-    	this.port = port;
-	}
+    
+    public ContSocketGateway(
+            @Value("${planta.external.contsocket.host:localhost}") String host,
+            @Value("${planta.external.contsocket.port:9090}") int port) {
+        this.host = host;
+        this.port = port;
+    }
     
     @Override
     public int consultarCapacidadDisponible(long plantaId) {
