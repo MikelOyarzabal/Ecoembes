@@ -1,9 +1,9 @@
-package es.deusto.ingenieria.sd.translation.server;
+package contsocket;
 
 import java.io.IOException;
 import java.net.ServerSocket;
 
-public class TranslationServer {
+public class ContSocketServer {
 	
 	private static int numClients = 0;
 	
@@ -20,7 +20,7 @@ public class TranslationServer {
 			System.out.println(" - TranslationServer: Waiting for connections '" + tcpServerSocket.getInetAddress().getHostAddress() + ":" + tcpServerSocket.getLocalPort() + "' ...");
 			
 			while (true) {
-				new TranslationService(tcpServerSocket.accept());
+				new ContSocketService(tcpServerSocket.accept());
 				System.out.println(" - TranslationServer: New client connection accepted. Client number: " + ++numClients);
 			}
 		} catch (IOException e) {
