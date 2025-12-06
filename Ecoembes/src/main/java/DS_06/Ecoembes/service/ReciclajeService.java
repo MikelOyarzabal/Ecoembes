@@ -159,11 +159,11 @@ public class ReciclajeService {
 
     // Get el llenado de un contenedor por fecha
     @Transactional(readOnly = true)
-    public Llenado getLlenadoContenedorByDate(long contenedorId, long date) {
+    public Llenado getLlenadoContenedorByDate(long contenedorId, Date date) {
         Contenedor contenedor = contenedorRepository.findById(contenedorId)
             .orElseThrow(() -> new RuntimeException("Contenedor no encontrado"));
         
-        Date fechaConsulta = new Date(date);
+        Date fechaConsulta = date;
         Date fechaVaciado = contenedor.getFechaVaciado();
         
         if (fechaVaciado != null && fechaVaciado.getTime() == fechaConsulta.getTime()) {
@@ -175,8 +175,8 @@ public class ReciclajeService {
 
     // Consulta del estado de los contenedores de una zona en una determinada fecha
     @Transactional(readOnly = true)
-    public List<Contenedor> getContenedoresByDateAndPostalCode(long date, int postalCode) {
-        Date fechaConsulta = new Date(date);
+    public List<Contenedor> getContenedoresByDateAndPostalCode(Date date, int postalCode) {
+        Date fechaConsulta = date;
         
         List<Contenedor> contenedores = contenedorRepository.findAll();
         

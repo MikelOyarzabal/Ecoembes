@@ -1,8 +1,10 @@
 package DS_06.Ecoembes.facade;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -85,11 +87,17 @@ public class ReciclajeController {
     public ResponseEntity<Llenado> getLlenadoContenedorByDate(
         @Parameter(name = "contenedorId", description = "ID del contenedor", required = true, example = "123")
         @PathVariable("contenedorId") long contenedorId,
-        @Parameter(name = "date", description = "Fecha en formato timestamp", required = true, example = "1704067200000")
-        @RequestParam(value = "date") long date,  // CAMBIADO
+        @Parameter(name = "date", description = "Fecha en formato ISO (yyyy-MM-dd'T'HH:mm:ss.SSSZ)", required = true, example = "2024-01-01T00:00:00.000+00:00")
+        @RequestParam(value = "date") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) Date date,  // CAMBIADO
         @Parameter(name = "token", description = "Token de autenticación", required = false)
         @RequestParam(value = "token", required = false) String token) {  // CAMBIADO
         try {
+        	/*GORKA HAZLO --------------------------
+        	 * 										|
+        	 * 										|
+        	 *									   \|/
+        	 *						 				V
+        	 * */									
             Llenado llenado = reciclajeService.getLlenadoContenedorByDate(contenedorId, date);
             return new ResponseEntity<>(llenado, HttpStatus.OK);
         } catch (RuntimeException e) {
@@ -113,14 +121,14 @@ public class ReciclajeController {
     )
     @GetMapping("/contenedores/zona")
     public ResponseEntity<List<ContenedorDTO>> getContenedoresByDateAndPostalCode(
-        @Parameter(name = "fecha", description = "Fecha en formato timestamp", required = true, example = "0")
-        @RequestParam(value = "fecha") long fecha,  // CAMBIADO
+    		@Parameter(name = "date", description = "Fecha en formato ISO (yyyy-MM-dd'T'HH:mm:ss.SSSZ)", required = true, example = "2024-01-01T00:00:00.000+00:00")
+            @RequestParam(value = "date") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) Date date,  // CAMBIADO
         @Parameter(name = "codigoPostal", description = "Código postal de la zona", required = true, example = "28001")
         @RequestParam(value = "codigoPostal") int codigoPostal,  // CAMBIADO
         @Parameter(name = "token", description = "Token de autenticación", required = false)
         @RequestParam(value = "token", required = false) String token) {  // CAMBIADO
         try {
-            List<Contenedor> contenedores = reciclajeService.getContenedoresByDateAndPostalCode(fecha, codigoPostal);
+            List<Contenedor> contenedores = reciclajeService.getContenedoresByDateAndPostalCode(date, codigoPostal);
 
             if (contenedores == null || contenedores.isEmpty()) {
                 return new ResponseEntity<>(HttpStatus.NO_CONTENT);
