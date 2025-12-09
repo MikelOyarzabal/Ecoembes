@@ -1,5 +1,7 @@
 package com.plassb.controller;
 
+import java.util.Date;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -48,7 +50,7 @@ public class PlantaReciclajeController {
     
     @PostMapping("/plantas/{plantaId}/contenedores")
     public ResponseEntity<RecepcionContenedorResponse> recibirContenedor(
-            @PathVariable("plantaId") Long plantaId,  // ← Añade esto
+            @PathVariable("plantaId") Long plantaId,  
             @RequestBody RecepcionContenedorRequest request) {
         try {
             RecepcionContenedorResponse response = plantaService.recibirContenedor(plantaId, request);
@@ -87,6 +89,6 @@ public class PlantaReciclajeController {
     @GetMapping("/health")
     public ResponseEntity<String> health() {
         return ResponseEntity.ok("{\"status\":\"OK\",\"service\":\"PlasSB\",\"timestamp\":\"" + 
-                new java.util.Date() + "\"}");
+                new Date() + "\"}");
     }
 }
