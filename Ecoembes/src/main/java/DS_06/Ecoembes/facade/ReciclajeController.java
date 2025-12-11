@@ -41,20 +41,28 @@ public class ReciclajeController {
         this.authService = authService;
     }
 
-    // GET all contenedores
+    // GET all contenedores - REQUIERE TOKEN
     @Operation(
         summary = "Get all Contenedores",
-        description = "Returns a list of all available Contenedores",
+        description = "Returns a list of all available Contenedores. Requires authentication token.",
         responses = {
             @ApiResponse(responseCode = "200", description = "OK: List of Contenedores retrieved successfully"),
             @ApiResponse(responseCode = "204", description = "No Content: No Contenedores found"),
+            @ApiResponse(responseCode = "401", description = "Unauthorized: Invalid or missing token"),
             @ApiResponse(responseCode = "500", description = "Internal server error")
         }
     )
     @GetMapping("/contenedores")
     public ResponseEntity<List<ContenedorDTO>> getAllContenedores(
-        @Parameter(name = "token", description = "Token de autenticación", required = false)
-        @RequestParam(value = "token", required = false) String token) {
+        @Parameter(name = "token", description = "Token de autenticación", required = true)
+        @RequestParam(value = "token") String token) {
+        
+        // VALIDAR TOKEN usando getUserByToken (ya existe en tu código)
+        User user = authService.getUserByToken(token);
+        if (user == null) {
+            return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+        }
+        
         try {
             List<Contenedor> contenedores = reciclajeService.getContenedores();
 
@@ -77,9 +85,10 @@ public class ReciclajeController {
 
     @Operation(
         summary = "Get llenado de un contenedor por fecha",
-        description = "Returns the fill level of a specific container for a given date",
+        description = "Returns the fill level of a specific container for a given date. Requires authentication token.",
         responses = {
             @ApiResponse(responseCode = "200", description = "OK: Llenado retrieved successfully"),
+            @ApiResponse(responseCode = "401", description = "Unauthorized: Invalid or missing token"),
             @ApiResponse(responseCode = "404", description = "Not Found: No data for the given date"),
             @ApiResponse(responseCode = "500", description = "Internal server error")
         }
@@ -90,8 +99,15 @@ public class ReciclajeController {
         @PathVariable("contenedorId") long contenedorId,
         @Parameter(name = "date", description = "Fecha en formato ISO (yyyy-MM-dd'T'HH:mm:ss.SSSZ)", required = true, example = "2024-01-01T00:00:00.000+00:00")
         @RequestParam(value = "date") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) Date date,
-        @Parameter(name = "token", description = "Token de autenticación", required = false)
-        @RequestParam(value = "token", required = false) String token) {
+        @Parameter(name = "token", description = "Token de autenticación", required = true)
+        @RequestParam(value = "token") String token) {
+        
+        // VALIDAR TOKEN
+        User user = authService.getUserByToken(token);
+        if (user == null) {
+            return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+        }
+        
         try {
             Llenado llenado = reciclajeService.getLlenadoContenedorByDate(contenedorId, date);
             return new ResponseEntity<>(llenado, HttpStatus.OK);
@@ -107,10 +123,11 @@ public class ReciclajeController {
 
     @Operation(
         summary = "Get contenedores por código postal y fecha",
-        description = "Permite visualizar el estado de los contenedores de una zona específica (identificada por código postal) en una fecha determinada",
+        description = "Permite visualizar el estado de los contenedores de una zona específica. Requires authentication token.",
         responses = {
             @ApiResponse(responseCode = "200", description = "OK: Lista de contenedores recuperada exitosamente"),
-            @ApiResponse(responseCode = "204", description = "No Content: No se encontraron contenedores para los criterios especificados"),
+            @ApiResponse(responseCode = "204", description = "No Content: No se encontraron contenedores"),
+            @ApiResponse(responseCode = "401", description = "Unauthorized: Invalid or missing token"),
             @ApiResponse(responseCode = "500", description = "Internal server error")
         }
     )
@@ -120,8 +137,15 @@ public class ReciclajeController {
         @RequestParam(value = "date") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) Date date,
         @Parameter(name = "codigoPostal", description = "Código postal de la zona", required = true, example = "28001")
         @RequestParam(value = "codigoPostal") int codigoPostal,
-        @Parameter(name = "token", description = "Token de autenticación", required = false)
-        @RequestParam(value = "token", required = false) String token) {
+        @Parameter(name = "token", description = "Token de autenticación", required = true)
+        @RequestParam(value = "token") String token) {
+        
+        // VALIDAR TOKEN
+        User user = authService.getUserByToken(token);
+        if (user == null) {
+            return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+        }
+        
         try {
             List<Contenedor> contenedores = reciclajeService.getContenedoresByDateAndPostalCode(date, codigoPostal);
 
@@ -142,20 +166,28 @@ public class ReciclajeController {
         }
     }
 
-    // GET all PlantaReciclaje
+    // GET all PlantaReciclaje - REQUIERE TOKEN
     @Operation(
         summary = "Get all Planta Reciclaje",
-        description = "Returns a list of all available Planta Reciclaje",
+        description = "Returns a list of all available Planta Reciclaje. Requires authentication token.",
         responses = {
             @ApiResponse(responseCode = "200", description = "OK: List of Planta Reciclaje retrieved successfully"),
             @ApiResponse(responseCode = "204", description = "No Content: No Planta Reciclaje found"),
+            @ApiResponse(responseCode = "401", description = "Unauthorized: Invalid or missing token"),
             @ApiResponse(responseCode = "500", description = "Internal server error")
         }
     )
     @GetMapping("/plantasreciclaje")
     public ResponseEntity<List<PlantaReciclajeDTO>> getAllPlantasReciclaje(
-        @Parameter(name = "token", description = "Token de autenticación", required = false)
-        @RequestParam(value = "token", required = false) String token) {
+        @Parameter(name = "token", description = "Token de autenticación", required = true)
+        @RequestParam(value = "token") String token) {
+        
+        // VALIDAR TOKEN
+        User user = authService.getUserByToken(token);
+        if (user == null) {
+            return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+        }
+        
         try {
             List<PlantaReciclaje> plantas = reciclajeService.getPlantasReciclaje();
 
@@ -176,14 +208,13 @@ public class ReciclajeController {
         }
     }
 
-    // GET capacidad disponible de una planta CON FECHA
+    // GET capacidad disponible de una planta CON FECHA - REQUIERE TOKEN
     @Operation(
         summary = "Get capacidad disponible de una planta para una fecha",
-        description = "Devuelve la capacidad disponible de una planta específica como un número entero. " +
-                      "Si se proporciona una fecha, consulta la capacidad para ese día específico. " +
-                      "Si no se proporciona fecha, devuelve la capacidad actual.",
+        description = "Devuelve la capacidad disponible de una planta específica. Requires authentication token.",
         responses = {
             @ApiResponse(responseCode = "200", description = "OK: Capacidad obtenida exitosamente"),
+            @ApiResponse(responseCode = "401", description = "Unauthorized: Invalid or missing token"),
             @ApiResponse(responseCode = "404", description = "Not Found: Planta no encontrada"),
             @ApiResponse(responseCode = "500", description = "Internal server error")
         }
@@ -196,16 +227,21 @@ public class ReciclajeController {
                    required = false, example = "2025-12-15")
         @RequestParam(value = "fecha", required = false) 
         @DateTimeFormat(pattern = "yyyy-MM-dd") Date fecha,
-        @Parameter(name = "token", description = "Token de autenticación", required = false)
-        @RequestParam(value = "token", required = false) String token) {
+        @Parameter(name = "token", description = "Token de autenticación", required = true)
+        @RequestParam(value = "token") String token) {
+        
+        // VALIDAR TOKEN
+        User user = authService.getUserByToken(token);
+        if (user == null) {
+            return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+        }
+        
         try {
             int capacidad;
             
             if (fecha != null) {
-                // Consultar capacidad para una fecha específica
                 capacidad = reciclajeService.consultarCapacidadDisponible(plantaId, fecha);
             } else {
-                // Consultar capacidad actual (sin fecha)
                 capacidad = reciclajeService.consultarCapacidadDisponible(plantaId);
             }
             
@@ -271,7 +307,7 @@ public class ReciclajeController {
         }
     }
 
-    // POST asignar un SOLO Contenedor a PlantaReciclaje - MANTENER para compatibilidad
+    // POST asignar un SOLO Contenedor a PlantaReciclaje
     @Operation(
         summary = "Asignar un Contenedor a Planta Reciclaje",
         description = "Permite asignar un contenedor específico a una planta de reciclaje",
@@ -327,10 +363,8 @@ public class ReciclajeController {
         summary = "Make a contendor",
         description = "Allows a user to make a contendor",
         responses = {
-            @ApiResponse(responseCode = "204", description = "No Content: Contendor placed successfully"),
+            @ApiResponse(responseCode = "201", description = "Created: Contenedor created successfully"),
             @ApiResponse(responseCode = "401", description = "Unauthorized: User not authenticated"),
-            @ApiResponse(responseCode = "404", description = "Not Found: Contenedor not found"),
-            @ApiResponse(responseCode = "409", description = "Conflict: Contenedor already exists"),
             @ApiResponse(responseCode = "500", description = "Internal server error")
         }
     )
