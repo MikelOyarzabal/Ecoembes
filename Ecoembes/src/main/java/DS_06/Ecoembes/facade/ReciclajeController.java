@@ -10,6 +10,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -53,7 +54,7 @@ public class ReciclajeController {
     @GetMapping("/contenedores")
     public ResponseEntity<List<ContenedorDTO>> getAllContenedores(
         @Parameter(name = "token", description = "Token de autenticación", required = false)
-        @RequestParam(value = "token", required = false) String token) {  // CAMBIADO
+        @RequestParam(value = "token", required = false) String token) {
         try {
             List<Contenedor> contenedores = reciclajeService.getContenedores();
 
@@ -88,16 +89,10 @@ public class ReciclajeController {
         @Parameter(name = "contenedorId", description = "ID del contenedor", required = true, example = "123")
         @PathVariable("contenedorId") long contenedorId,
         @Parameter(name = "date", description = "Fecha en formato ISO (yyyy-MM-dd'T'HH:mm:ss.SSSZ)", required = true, example = "2024-01-01T00:00:00.000+00:00")
-        @RequestParam(value = "date") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) Date date,  // CAMBIADO
+        @RequestParam(value = "date") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) Date date,
         @Parameter(name = "token", description = "Token de autenticación", required = false)
-        @RequestParam(value = "token", required = false) String token) {  // CAMBIADO
+        @RequestParam(value = "token", required = false) String token) {
         try {
-        	/*GORKA HAZLO --------------------------
-        	 * 										|
-        	 * 										|
-        	 *									   \|/
-        	 *						 				V
-        	 * */									
             Llenado llenado = reciclajeService.getLlenadoContenedorByDate(contenedorId, date);
             return new ResponseEntity<>(llenado, HttpStatus.OK);
         } catch (RuntimeException e) {
@@ -121,12 +116,12 @@ public class ReciclajeController {
     )
     @GetMapping("/contenedores/zona")
     public ResponseEntity<List<ContenedorDTO>> getContenedoresByDateAndPostalCode(
-    		@Parameter(name = "date", description = "Fecha en formato ISO (yyyy-MM-dd'T'HH:mm:ss.SSSZ)", required = true, example = "2024-01-01T00:00:00.000+00:00")
-            @RequestParam(value = "date") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) Date date,  // CAMBIADO
+        @Parameter(name = "date", description = "Fecha en formato ISO (yyyy-MM-dd'T'HH:mm:ss.SSSZ)", required = true, example = "2024-01-01T00:00:00.000+00:00")
+        @RequestParam(value = "date") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) Date date,
         @Parameter(name = "codigoPostal", description = "Código postal de la zona", required = true, example = "28001")
-        @RequestParam(value = "codigoPostal") int codigoPostal,  // CAMBIADO
+        @RequestParam(value = "codigoPostal") int codigoPostal,
         @Parameter(name = "token", description = "Token de autenticación", required = false)
-        @RequestParam(value = "token", required = false) String token) {  // CAMBIADO
+        @RequestParam(value = "token", required = false) String token) {
         try {
             List<Contenedor> contenedores = reciclajeService.getContenedoresByDateAndPostalCode(date, codigoPostal);
 
@@ -160,7 +155,7 @@ public class ReciclajeController {
     @GetMapping("/plantasreciclaje")
     public ResponseEntity<List<PlantaReciclajeDTO>> getAllPlantasReciclaje(
         @Parameter(name = "token", description = "Token de autenticación", required = false)
-        @RequestParam(value = "token", required = false) String token) {  // CAMBIADO
+        @RequestParam(value = "token", required = false) String token) {
         try {
             List<PlantaReciclaje> plantas = reciclajeService.getPlantasReciclaje();
 
@@ -181,9 +176,89 @@ public class ReciclajeController {
         }
     }
 
-    // POST asignar Contenedor a PlantaReciclaje
+    // GET capacidad disponible de una planta - MODIFICADO: devuelve solo el número
     @Operation(
-        summary = "Asignar Contenedor a Planta Reciclaje",
+        summary = "Get capacidad disponible de una planta",
+        description = "Devuelve la capacidad disponible de una planta específica como un número entero",
+        responses = {
+            @ApiResponse(responseCode = "200", description = "OK: Capacidad obtenida exitosamente"),
+            @ApiResponse(responseCode = "404", description = "Not Found: Planta no encontrada"),
+            @ApiResponse(responseCode = "500", description = "Internal server error")
+        }
+    )
+    @GetMapping("/plantasreciclaje/{idPlanta}/capacidad")
+    public ResponseEntity<Integer> getCapacidadDisponible(
+        @Parameter(name = "idPlanta", description = "ID de la planta de reciclaje", required = true, example = "1")
+        @PathVariable("idPlanta") long plantaId,
+        @Parameter(name = "token", description = "Token de autenticación", required = false)
+        @RequestParam(value = "token", required = false) String token) {
+        try {
+            int capacidad = reciclajeService.consultarCapacidadDisponible(plantaId);
+            return new ResponseEntity<>(capacidad, HttpStatus.OK);
+        } catch (RuntimeException e) {
+            if (e.getMessage().contains("no encontrada")) {
+                return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+            }
+            System.err.println("ERROR en getCapacidadDisponible: " + e.getMessage());
+            e.printStackTrace();
+            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    // POST asignar LISTA de Contenedores a PlantaReciclaje - MODIFICADO
+    @Operation(
+        summary = "Asignar lista de Contenedores a Planta Reciclaje",
+        description = "Permite asignar una lista de contenedores a una planta de reciclaje",
+        responses = {
+            @ApiResponse(responseCode = "204", description = "No Content: Contenedores asignados exitosamente"),
+            @ApiResponse(responseCode = "401", description = "Unauthorized: Usuario no autenticado"),
+            @ApiResponse(responseCode = "404", description = "Not Found: Planta de reciclaje o algún contenedor no encontrado"),
+            @ApiResponse(responseCode = "409", description = "Conflict: Capacidad insuficiente en la planta"),
+            @ApiResponse(responseCode = "500", description = "Internal server error")
+        }
+    )
+    @PostMapping("/plantasreciclaje/{idPlanta}/contenedores")
+    public ResponseEntity<Void> asignarContenedoresAPlanta(
+        @Parameter(name = "idPlanta", description = "ID de la planta de reciclaje", required = true, example = "1")
+        @PathVariable("idPlanta") long plantaId,
+        @Parameter(name = "idsContenedores", description = "Lista de IDs de contenedores", required = true)
+        @RequestBody List<Long> idsContenedores,
+        @Parameter(name = "token", description = "Token de autenticación", required = true)
+        @RequestParam(value = "token") String token) {
+        try {
+            User user = authService.getUserByToken(token);
+
+            if (user == null) {
+                return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+            }
+
+            reciclajeService.asignarContenedoresAPlanta(user, idsContenedores, plantaId);
+
+            return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+        } catch (RuntimeException e) {
+            String errorMessage = e.getMessage();
+            System.err.println("ERROR en asignarContenedoresAPlanta: " + errorMessage);
+            e.printStackTrace();
+            if (errorMessage != null) {
+                if (errorMessage.contains("Contenedor no encontrado") ||
+                    errorMessage.contains("Planta de reciclaje no encontrada")) {
+                    return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+                } else if (errorMessage.contains("Capacidad insuficiente") ||
+                           errorMessage.contains("El contenedor ya está asignado")) {
+                    return new ResponseEntity<>(HttpStatus.CONFLICT);
+                }
+            }
+            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+        } catch (Exception e) {
+            System.err.println("ERROR en asignarContenedoresAPlanta: " + e.getMessage());
+            e.printStackTrace();
+            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    // POST asignar un SOLO Contenedor a PlantaReciclaje - MANTENER para compatibilidad
+    @Operation(
+        summary = "Asignar un Contenedor a Planta Reciclaje",
         description = "Permite asignar un contenedor específico a una planta de reciclaje",
         responses = {
             @ApiResponse(responseCode = "204", description = "No Content: Contenedor asignado exitosamente"),
@@ -195,13 +270,13 @@ public class ReciclajeController {
     )
     @PostMapping("/plantasreciclaje/{idPlanta}/contenedor/{idContenedor}")
     public ResponseEntity<Void> asignarContenedorAPlanta(
-        @Parameter(name = "idPlanta", description = "ID de la planta de reciclaje", required = true, example = "1")        
+        @Parameter(name = "idPlanta", description = "ID de la planta de reciclaje", required = true, example = "1")
         @PathVariable("idPlanta") long plantaId,
-        @Parameter(name = "idContenedor", description = "ID del contenedor", required = true, example = "1")        
+        @Parameter(name = "idContenedor", description = "ID del contenedor", required = true, example = "1")
         @PathVariable("idContenedor") long contenedorId,
         @Parameter(name = "token", description = "Token de autenticación", required = true)
-        @RequestParam(value = "token") String token) {  // CAMBIADO
-        try {    
+        @RequestParam(value = "token") String token) {
+        try {
             User user = authService.getUserByToken(token);
 
             if (user == null) {
@@ -216,10 +291,10 @@ public class ReciclajeController {
             System.err.println("ERROR en asignarContenedorAPlanta: " + errorMessage);
             e.printStackTrace();
             if (errorMessage != null) {
-                if (errorMessage.contains("Contenedor no encontrado") || 
+                if (errorMessage.contains("Contenedor no encontrado") ||
                     errorMessage.contains("Planta de reciclaje no encontrada")) {
                     return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-                } else if (errorMessage.contains("Capacidad insuficiente") || 
+                } else if (errorMessage.contains("Capacidad insuficiente") ||
                            errorMessage.contains("El contenedor ya está asignado")) {
                     return new ResponseEntity<>(HttpStatus.CONFLICT);
                 }
@@ -243,28 +318,26 @@ public class ReciclajeController {
             @ApiResponse(responseCode = "409", description = "Conflict: Contenedor already exists"),
             @ApiResponse(responseCode = "500", description = "Internal server error")
         }
-    )        
-    @PostMapping("/contenedores")  // ← Quitar /{contenedorId} del path
-    public ResponseEntity<Long> makeContenedor( 
+    )
+    @PostMapping("/contenedores")
+    public ResponseEntity<Long> makeContenedor(
         @Parameter(name = "codigoPostal", description = "codigoPostal del contenedor", required = true, example = "486236")
         @RequestParam(value = "codigoPostal") int codigoPostal,
         @Parameter(name = "capacidad", description = "capacidad del contenedor", required = true, example = "10")
         @RequestParam(value = "capacidad") float capacidad,
         @Parameter(name = "token", description = "Token de autenticación", required = true)
         @RequestParam(value = "token") String token) {
-        try {    
+        try {
             User user = authService.getUserByToken(token);
 
             if (user == null) {
                 return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
             }
 
-            // Llamar al método modificado que retorna el contenedor
             Contenedor nuevoContenedor = reciclajeService.makeContenedor(user, codigoPostal, capacidad);
 
-            // Retornar el ID real del contenedor creado
             return new ResponseEntity<>(nuevoContenedor.getId(), HttpStatus.CREATED);
-            
+
         } catch (Exception e) {
             System.err.println("ERROR en makeContenedor: " + e.getMessage());
             e.printStackTrace();
@@ -274,10 +347,9 @@ public class ReciclajeController {
 
     // Converts a Contenedor to a ContenedorDTO
     private ContenedorDTO contenedorToDTO(Contenedor contenedor) {
-        // Solo incluimos datos básicos, NO relaciones LAZY
         return new ContenedorDTO(
-            contenedor.getId(), 
-            contenedor.getCodigoPostal(), 
+            contenedor.getId(),
+            contenedor.getCodigoPostal(),
             contenedor.getCapacidad(),
             contenedor.getNivelDeLlenado(),
             contenedor.getFechaVaciado()
@@ -286,17 +358,13 @@ public class ReciclajeController {
 
     // Converts a PlantaReciclaje to a PlantaReciclajeDTO
     private PlantaReciclajeDTO plantaReciclajeToDTO(PlantaReciclaje planta) {
-        // Convertir la lista de Contenedor a lista de ContenedorDTO
         List<ContenedorDTO> contenedoresDTO = new ArrayList<>();
-        
-        // IMPORTANTE: Como los contenedores son LAZY, solo accedemos si ya están cargados
-        // Si no están cargados, dejamos la lista vacía
+
         try {
             List<Contenedor> contenedores = planta.getContenedores();
-            
+
             if (contenedores != null && !contenedores.isEmpty()) {
                 for (Contenedor contenedor : contenedores) {
-                    // Solo incluimos datos básicos del contenedor, NO sus relaciones
                     contenedoresDTO.add(new ContenedorDTO(
                         contenedor.getId(),
                         contenedor.getCodigoPostal(),
@@ -307,18 +375,15 @@ public class ReciclajeController {
                 }
             }
         } catch (Exception e) {
-            // Si hay error de LazyInitialization, simplemente no incluimos los contenedores
-            System.err.println("Advertencia: No se pudieron cargar los contenedores para la planta " + planta.getId() + 
+            System.err.println("Advertencia: No se pudieron cargar los contenedores para la planta " + planta.getId() +
                              ". Error: " + e.getMessage());
         }
-        
-        // Obtener la capacidad disponible de la entidad
+
         int capacidadDisponible = planta.getCapacidadDisponible();
-        
-        // Usar el constructor con 5 parámetros
+
         return new PlantaReciclajeDTO(
-            planta.getId(), 
-            planta.getNombre(), 
+            planta.getId(),
+            planta.getNombre(),
             planta.getCapacidad(),
             capacidadDisponible,
             contenedoresDTO

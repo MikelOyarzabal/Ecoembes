@@ -1,8 +1,3 @@
-/**
- * This code is based on solutions provided by ChatGPT 4o and 
- * adapted using GitHub Copilot. It has been thoroughly reviewed 
- * and validated to ensure correctness and that it is free of errors.
- */
 package DS_06.Ecoembes.service;
 
 import java.util.Date;
@@ -42,20 +37,143 @@ public class ReciclajeService {
         return contenedorRepository.findAll();
     }
 
-    // Get all plantasReciclaje - Aseguramos que los contenedores se carguen dentro de la transacción
+    // Get all plantasReciclaje
     @Transactional(readOnly = true)
     public List<PlantaReciclaje> getPlantasReciclaje() {
         List<PlantaReciclaje> plantas = plantaReciclajeRepository.findAll();
         
-        // Para cada planta, cargamos la colección LAZY de contenedores dentro de la transacción
         for (PlantaReciclaje planta : plantas) {
-            // Inicializamos la colección accediendo a ella (por ejemplo, obteniendo su tamaño)
-            planta.getContenedores().size(); // Esto fuerza la carga de los contenedores
+            planta.getContenedores().size();
         }
         
         return plantas;
     }
     
+    // NUEVO: Consultar capacidad disponible - devuelve solo el número
+    @Transactional(readOnly = true)
+    public int consultarCapacidadDisponible(long plantaId) {
+        PlantaReciclaje planta = plantaReciclajeRepository.findById(plantaId)
+            .orElseThrow(() -> new RuntimeException("Planta de reciclaje no encontrada"));
+        
+        // Determinar tipo de planta si no está establecido
+        if (planta.getTipoPlanta() == null || "DESCONOCIDO".equals(planta.getTipoPlanta())) {
+            planta.determinarTipoPorNombre();
+        }
+
+        // Si es planta externa, consultar por gateway
+        if (!"DESCONOCIDO".equals(planta.getTipoPlanta())) {
+            try {
+                IPlantaReciclajeGateway gateway = gatewayFactory.createGateway(planta.getTipoPlanta());
+                return gateway.consultarCapacidadDisponible(plantaId);
+            } catch (Exception e) {
+                logger.warn("Error al consultar capacidad externa para planta {}, usando valor local: {}", 
+                           plantaId, e.getMessage());
+                // Fallback a capacidad local si falla la consulta externa
+                return planta.getCapacidadDisponible();
+            }
+        }
+        
+        // Si es planta local, devolver capacidad local
+        return planta.getCapacidadDisponible();
+    }
+    
+    // NUEVO: Asignar lista de contenedores a una planta
+    @Transactional
+    public void asignarContenedoresAPlanta(User usuario, List<Long> idsContenedores, long plantaId) {
+        // Validar que la lista no esté vacía
+        if (idsContenedores == null || idsContenedores.isEmpty()) {
+            throw new RuntimeException("La lista de contenedores no puede estar vacía");
+        }
+        
+        // Obtener la planta
+        PlantaReciclaje planta = plantaReciclajeRepository.findById(plantaId)
+            .orElseThrow(() -> new RuntimeException("Planta de reciclaje no encontrada"));
+        
+        // Obtener todos los contenedores
+        List<Contenedor> contenedores = contenedorRepository.findAllById(idsContenedores);
+        
+        // Validar que se encontraron todos los contenedores
+        if (contenedores.size() != idsContenedores.size()) {
+            throw new RuntimeException("Uno o más contenedores no fueron encontrados");
+        }
+        
+        // Determinar tipo de planta si no está establecido
+        if (planta.getTipoPlanta() == null || "DESCONOCIDO".equals(planta.getTipoPlanta())) {
+            planta.determinarTipoPorNombre();
+        }
+        
+        // Si el tipo es DESCONOCIDO, usar lógica local
+        if ("DESCONOCIDO".equals(planta.getTipoPlanta())) {
+            asignarContenedoresLocal(usuario, contenedores, planta);
+            return;
+        }
+        
+        // Si es planta externa, usar gateway
+        try {
+            IPlantaReciclajeGateway gateway = gatewayFactory.createGateway(planta.getTipoPlanta());
+            
+            // 1. Consultar capacidad disponible
+            int capacidadDisponible = gateway.consultarCapacidadDisponible(plantaId);
+            
+            // 2. Calcular capacidad total necesaria
+            int capacidadNecesaria = 0;
+            for (Contenedor contenedor : contenedores) {
+                capacidadNecesaria += contenedor.getOcupado();
+            }
+            
+            // 3. Verificar capacidad
+            if (capacidadDisponible < capacidadNecesaria) {
+                throw new RuntimeException("Capacidad insuficiente en la planta externa. Necesario: " + 
+                                         capacidadNecesaria + ", Disponible: " + capacidadDisponible);
+            }
+            
+            // 4. Enviar contenedores uno por uno
+            for (Contenedor contenedor : contenedores) {
+                boolean exito = gateway.enviarContenedor(plantaId, contenedor);
+                if (!exito) {
+                    throw new RuntimeException("Error al enviar contenedor " + contenedor.getId() + 
+                                             " a la planta externa");
+                }
+            }
+            
+            // 5. Actualizar estado localmente
+            for (Contenedor contenedor : contenedores) {
+                actualizarAsignacionLocal(usuario, contenedor, planta);
+            }
+            
+            logger.info("Asignados {} contenedores a planta externa {}", contenedores.size(), plantaId);
+            
+        } catch (Exception e) {
+            logger.warn("Error al comunicar con planta externa {}, intentando asignación local: {}", 
+                       planta.getTipoPlanta(), e.getMessage());
+            asignarContenedoresLocal(usuario, contenedores, planta);
+        }
+    }
+    
+    // Método helper para asignar lista de contenedores localmente
+    private void asignarContenedoresLocal(User usuario, List<Contenedor> contenedores, PlantaReciclaje planta) {
+        // Calcular capacidad total necesaria
+        int capacidadNecesaria = 0;
+        for (Contenedor contenedor : contenedores) {
+            capacidadNecesaria += contenedor.getOcupado();
+        }
+        
+        // Verificar capacidad disponible
+        if (planta.getCapacidadDisponible() < capacidadNecesaria) {
+            throw new RuntimeException("Capacidad insuficiente en la planta. Necesario: " + 
+                                     capacidadNecesaria + ", Disponible: " + planta.getCapacidadDisponible());
+        }
+        
+        // Asignar todos los contenedores
+        for (Contenedor contenedor : contenedores) {
+            actualizarAsignacionLocal(usuario, contenedor, planta);
+        }
+        
+        logger.info("Asignados {} contenedores localmente a planta {}", contenedores.size(), planta.getId());
+    }
+    
+    // MANTENER: Método original para asignar un solo contenedor (compatibilidad)
+    @Transactional
     public void asignarContenedorAPlanta(User usuario, long contenedorId, long plantaId) {
         // Obtener contenedor
         Contenedor contenedor = contenedorRepository.findById(contenedorId)
@@ -197,7 +315,7 @@ public class ReciclajeService {
     }
     
     // Method to make contenedor (crear nuevo contenedor)
-    public Contenedor makeContenedor(User user, int codigoPostal, float capacidad) {  // ← Quitar contenedorId, retornar Contenedor
+    public Contenedor makeContenedor(User user, int codigoPostal, float capacidad) {
         // Validaciones
         if (codigoPostal <= 0 || capacidad <= 0) {
             throw new RuntimeException("Invalid parameters");
@@ -209,9 +327,9 @@ public class ReciclajeService {
         
         // Guardar y forzar persistencia
         Contenedor saved = contenedorRepository.save(cont);
-        contenedorRepository.flush();  // ← Asegurar que se persiste inmediatamente
+        contenedorRepository.flush();
         
-        return saved;  // ← Retornar el contenedor con ID real
+        return saved;
     }
 
     // Method to add a new PlantaReciclaje
